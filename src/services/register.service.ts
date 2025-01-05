@@ -1,33 +1,43 @@
-import { prisma } from '@/lib/prisma'
-import { hash } from 'bcryptjs'
+import { UsersRepository } from '@/repositories/users-repository'
 
-interface RegisterService {
+import { hash } from 'bcryptjs'
+import { UserAlreadyExistsError } from './erros/user-already-exists-error'
+import { User } from '@prisma/client'
+
+interface RegisterServiceRequest {
   name: string
   email: string
   password: string
 }
 
-export async function registerService({
-  email,
-  name,
-  password,
-}: RegisterService) {
-  const passwordHash = await hash(password, 6)
-  const userWithSameEmail = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  })
+interface RegisterServiceResponse {
+  user: User
+}
 
-  if (userWithSameEmail) {
-    throw new Error('E-mail already exists.')
-  }
+export class RegisterService {
+  constructor(private usersRepository: UsersRepository) {}
 
-  await prisma.user.create({
-    data: {
+  async execute({
+    email,
+    name,
+    password,
+  }: RegisterServiceRequest): Promise<RegisterServiceResponse> {
+    const passwordHash = await hash(password, 6)
+
+    const userWithSameEmail = await this.usersRepository.findByEmail(email)
+
+    if (userWithSameEmail) {
+      throw new UserAlreadyExistsError()
+    }
+
+    const user = await this.usersRepository.create({
       email,
       name,
       password_hash: passwordHash,
-    },
-  })
+    })
+
+    return {
+      user,
+    }
+  }
 }
