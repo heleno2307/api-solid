@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { hash } from 'bcryptjs'
 import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository'
 import { GetUserProfileService } from './get-user-profile.service'
-import { ResourceNotFound } from './erros/resource-not-found-error'
+import { ResourceNotFoundError } from './erros/resource-not-found-error'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
 let sut: GetUserProfileService
@@ -35,11 +35,10 @@ describe('Get User Service', () => {
       password_hash: await hash('123456', 6),
     })
 
-    expect(
-      async () =>
-        await sut.execute({
-          userId: 'wrong user-id',
-        }),
-    ).rejects.toBeInstanceOf(ResourceNotFound)
+    await expect(() =>
+      sut.execute({
+        userId: 'wrong user-id',
+      }),
+    ).rejects.toBeInstanceOf(ResourceNotFoundError)
   })
 })

@@ -35,12 +35,11 @@ describe('Authenticate Service', () => {
       password_hash: await hash('123456', 6),
     })
 
-    expect(
-      async () =>
-        await sut.execute({
-          email: 'johndoe@example.com.br',
-          password: '123456',
-        }),
+    await expect(() =>
+      sut.execute({
+        email: 'johndoe@example.com.br',
+        password: '123456',
+      }),
     ).rejects.toBeInstanceOf(InvalidCredentialsError)
   })
 
@@ -51,12 +50,11 @@ describe('Authenticate Service', () => {
       password_hash: await hash('123456', 6),
     })
 
-    expect(
-      async () =>
-        await sut.execute({
-          email: 'johndoe@example.com.br',
-          password: '12345',
-        }),
+    await expect(() =>
+      sut.execute({
+        email: 'johndoe@example.com.br',
+        password: '12345',
+      }),
     ).rejects.toBeInstanceOf(InvalidCredentialsError)
   })
 })
